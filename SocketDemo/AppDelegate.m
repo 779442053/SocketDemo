@@ -7,8 +7,14 @@
 //
 
 #import "AppDelegate.h"
-
+#import "AppDelegate+ZWWAppDelegate.h"
+#import "ZWDataManager.h"
+#import "ZWUserModel.h"
+#import <AFNetworking/AFNetworking.h>
+#import<CoreTelephony/CTCellularData.h>
+#import "HomeViewController.h"
 @interface AppDelegate ()
+@property (strong,nonatomic) Reachability* reachablity;
 
 @end
 
@@ -16,26 +22,40 @@
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    // Override point for customization after application launch.
+    [self initWindow];
+    self.window.rootViewController = self.navigation;
+    [self.window makeKeyAndVisible];
     return YES;
 }
-
-
-#pragma mark - UISceneSession lifecycle
-
-
-- (UISceneConfiguration *)application:(UIApplication *)application configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession options:(UISceneConnectionOptions *)options {
-    // Called when a new scene session is being created.
-    // Use this method to select a configuration to create the new scene with.
-    return [[UISceneConfiguration alloc] initWithName:@"Default Configuration" sessionRole:connectingSceneSession.role];
+- (void)applicationDidEnterBackground:(UIApplication *)application {
+     [ZWDataManager saveUserData];
+}
+- (void)applicationWillTerminate:(UIApplication *)application {
+    [ZWDataManager saveUserData];
+}
+-(void)applicationDidReceiveMemoryWarning:(UIApplication *)application {
+    SDWebImageManager *mgr = [SDWebImageManager sharedManager];
+    //取消下载
+    [mgr cancelAll];
+    //清空缓存
+    [mgr.imageCache clearWithCacheType:SDImageCacheTypeAll completion:nil];
+}
++(AppDelegate *)shareAppDelegate{
+    return (AppDelegate *)[[UIApplication sharedApplication] delegate];
+}
+-(UINavigationController *)navigation{
+    if (!_navigation) {
+        //导航视图==首页
+        HomeViewController *homeVC = [[HomeViewController alloc]init];
+        _navigation = [[UINavigationController alloc] init];
+        [_navigation pushViewController:homeVC animated:NO];
+        [_navigation.navigationBar setHidden:YES];
+        [_navigation.toolbar setHidden:YES];
+    }
+    return _navigation;
 }
 
 
-- (void)application:(UIApplication *)application didDiscardSceneSessions:(NSSet<UISceneSession *> *)sceneSessions {
-    // Called when the user discards a scene session.
-    // If any sessions were discarded while the application was not running, this will be called shortly after application:didFinishLaunchingWithOptions.
-    // Use this method to release any resources that were specific to the discarded scenes, as they will not return.
-}
 
 
 @end
